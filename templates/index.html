@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Academic Chatbot</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#667eea,#764ba2);
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.container{
+width:900px;
+height:600px;
+background:white;
+border-radius:20px;
+overflow:hidden;
+display:flex;
+box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* Sidebar */
+
+.sidebar{
+width:250px;
+background:#1e293b;
+color:white;
+padding:25px;
+}
+
+.sidebar h2{
+margin-bottom:25px;
+text-align:center;
+}
+
+.menu{
+margin-top:30px;
+}
+
+.menu div{
+padding:12px;
+margin-bottom:15px;
+border-radius:10px;
+background:#334155;
+cursor:pointer;
+}
+
+.menu div:hover{
+background:#4a6cf7;
+}
+
+/* Chat section */
+
+.chat-section{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+.header{
+background:linear-gradient(to right,#4a6cf7,#6a5af9);
+color:white;
+padding:18px;
+font-size:22px;
+font-weight:bold;
+text-align:center;
+}
+
+.chat-box{
+flex:1;
+padding:20px;
+overflow-y:auto;
+background:#f4f7fc;
+}
+
+.message{
+max-width:70%;
+padding:12px 16px;
+margin:12px 0;
+border-radius:15px;
+font-size:14px;
+line-height:1.5;
+}
+
+.user{
+background:#4a6cf7;
+color:white;
+margin-left:auto;
+}
+
+.bot{
+background:white;
+box-shadow:0px 2px 10px rgba(0,0,0,.1);
+}
+
+.typing{
+font-style:italic;
+color:gray;
+}
+
+/* Suggestions */
+
+.suggestions{
+padding:10px;
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+background:white;
+}
+
+.suggestions button{
+padding:8px 12px;
+border:none;
+border-radius:20px;
+background:#e5e7eb;
+cursor:pointer;
+}
+
+.suggestions button:hover{
+background:#4a6cf7;
+color:white;
+}
+
+/* Input area */
+
+.input-area{
+display:flex;
+padding:15px;
+border-top:1px solid #ddd;
+background:white;
+}
+
+.input-area input{
+flex:1;
+padding:14px;
+border:1px solid #ddd;
+border-radius:25px;
+outline:none;
+font-size:14px;
+}
+
+.input-area button{
+margin-left:10px;
+padding:14px 20px;
+border:none;
+border-radius:25px;
+background:#4a6cf7;
+color:white;
+cursor:pointer;
+font-size:15px;
+}
+
+.input-area button:hover{
+background:#3558d4;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="sidebar">
+
+<h2>🎓 Advisor AI</h2>
+
+<div class="menu">
+
+<div onclick="menuAction('courses')">
+📚 Courses
+</div>
+
+<div onclick="menuAction('appointments')">
+📅 Appointments
+</div>
+
+<div onclick="menuAction('policies')">
+📖 Policies
+</div>
+
+
+</div>
+
+</div>
+
+<div class="chat-section">
+
+<div class="header">
+AI Academic Advising Chatbot
+</div>
+
+<div class="chat-box" id="chatBox"></div>
+
+<div class="suggestions">
+<button onclick="fillText('Recommend courses')">
+Recommend Courses
+</button>
+
+<button onclick="fillText('Semester planning')">
+Semester Plan
+</button>
+
+<button onclick="fillText('Attendance policy')">
+Attendance
+</button>
+
+</div>
+
+<div class="input-area">
+<input id="msg" placeholder="Ask something...">
+<button onclick="send()">Send</button>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let chatBox=document.getElementById("chatBox");
+
+addMessage(
+"Hello 👋 Welcome to Academic Advisor Bot. How may I help you today?",
+"bot"
+);
+
+function addMessage(text,type){
+
+let msg=document.createElement("div");
+
+msg.className="message "+type;
+
+msg.innerText=text;
+
+chatBox.appendChild(msg);
+
+chatBox.scrollTop=chatBox.scrollHeight;
+
+}
+
+function fillText(text){
+
+document.getElementById("msg").value=text;
+
+}
+
+function send(){
+
+let input=document.getElementById("msg");
+
+let message=input.value;
+
+if(message.trim()==="") return;
+
+addMessage(message,"user");
+
+input.value="";
+
+let typing=document.createElement("div");
+
+typing.className="message bot typing";
+
+typing.innerText="Typing...";
+
+chatBox.appendChild(typing);
+
+fetch("/chat",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+message:message
+})
+
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+
+chatBox.removeChild(typing);
+
+addMessage(data.reply,"bot");
+
+})
+
+.catch(()=>{
+
+chatBox.removeChild(typing);
+
+addMessage("Server connection error","bot");
+
+})
+
+}
+
+document.getElementById("msg")
+.addEventListener("keypress",function(e){
+
+if(e.key==="Enter")
+send();
+
+});
+
+</script>
+
+</body>
+</html>
+<script>
+
+function menuAction(type){
+
+if(type=="courses"){
+addMessage(
+`Course Information:
+
+📚 Course Recommendations
+The chatbot can suggest suitable courses based on student interests, completed subjects, academic performance, and future career goals. Recommendations help students choose subjects that align with their learning objectives.
+
+📚 Subject Prerequisites
+Some courses require students to complete certain subjects before enrolling. The system provides prerequisite information to ensure that students meet the required conditions.
+
+📚 Degree Requirements
+Students need to complete a specific number of credits and mandatory subjects to successfully complete their degree program. The chatbot helps students understand these requirements.
+
+📚 Elective Courses
+Students can explore elective subjects according to their interests and specialization areas. Electives provide flexibility and allow students to gain additional knowledge.
+
+📚 Semester Planning
+The system can help students create a balanced semester schedule by suggesting suitable combinations of subjects and credit loads.
+
+📚 Course Details
+Students can receive information regarding course descriptions, syllabus topics, duration, objectives, and academic outcomes.`
+,
+"bot"
+);
+}
+
+else if(type=="appointments"){
+addMessage(
+`Appointment Services:
+
+📅 Appointment Booking
+Students can request appointments with academic advisors directly through the chatbot interface. The system allows users to select a suitable date and time according to availability.
+
+📅 Schedule Management
+The chatbot can help students view available schedules and choose preferred meeting slots. It helps reduce scheduling conflicts and makes the process more organized.
+
+📅 Appointment Confirmation
+Once an appointment request is submitted, the system automatically confirms the booking and provides details such as date, time, and meeting information.
+
+📅 Rescheduling Option
+Students can modify or reschedule appointments if they are unable to attend the originally selected time slot.
+
+📅 Cancellation Support
+The system also allows users to cancel previously booked appointments whenever required.
+
+📅 Advisor Assistance
+Appointments can be used for discussions related to course selection, semester planning, degree requirements, academic performance, and career guidance.
+
+📅 Benefits
+This feature reduces manual administrative work, saves time for students and advisors, and improves communication within the institution.`
+,
+"bot"
+);
+}
+
+else if(type=="policies"){
+addMessage(
+`Academic Policies:
+
+📌 Attendance Policy
+Students are required to maintain a minimum attendance percentage according to institutional rules. Low attendance may affect eligibility for examinations and internal assessments.
+
+📌 Grading Policy
+Student performance is evaluated through assignments, quizzes, practical work, projects, and semester examinations. Grades are assigned based on marks obtained.
+
+📌 Credit Requirements
+Students must complete the required credits for their program to qualify for degree completion and graduation.
+
+📌 Examination Rules
+Students should follow examination guidelines, maintain discipline during exams, and avoid any unfair practices.
+
+📌 Registration Policy
+Students must register for courses within the given deadlines. Late registration may require additional approval.
+
+📌 Academic Integrity
+Students are expected to maintain honesty and avoid plagiarism, cheating, or any academic misconduct.`
+,
+"bot"
+);
+}
+
+
+}
+
+</script>
